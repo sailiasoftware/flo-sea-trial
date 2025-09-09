@@ -1,0 +1,31 @@
+model Ressource {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+
+  // Activity connection
+  activity  Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  activityId Int
+
+  // RessourceItem connection (the number of items conforms to availability)
+  ressourceItems RessourceItem[]
+}
+
+model RessourceItem {
+  id          Int      @id @default(autoincrement())
+  bookedAt    DateTime @default(now())
+  bookedUntil DateTime
+  status      String
+
+  // Ressource connection
+  ressource Ressource @relation(fields: [ressourceId], references: [id], onDelete: Cascade)
+  ressourceId Int
+}
+
+enum ItemStatus {
+  AVAILABLE
+  BOOKED
+  DAMAGED
+}

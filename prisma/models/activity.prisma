@@ -1,0 +1,22 @@
+model Activity {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Ressource Connection
+  ressources Ressource[]
+
+  // Booking Connection
+  bookings  ActivietiesOnBookings[]
+}
+
+model ActivietiesOnBookings {
+  booking    Booking  @relation(fields: [bookingId], references: [id])
+  bookingId  Int
+  activity   Activity @relation(fields: [activityId], references: [id])
+  activityId Int
+  assignedAt DateTime @default(now())
+
+  @@id([bookingId, activityId])
+}
