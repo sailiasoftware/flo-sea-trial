@@ -1,4 +1,6 @@
 # Sailia Sea Trail
+
+Find the concept and implementation details [here](./docs/Concept.md)
   
 Hey there! 👋 We're super happy you've made it this far into the process, and very excited for you to tackle this final challenge.  
   
