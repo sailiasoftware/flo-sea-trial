@@ -1,3 +1,7 @@
+"use client";
+
+import { api } from "@/trpc/react";
+
 export default function Bookings() {
 	return (
 		<div className="p-10">

@@ -3,6 +3,7 @@ import "@/styles/globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ModeToggle } from "@/components/custom";
+import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/providers";
 import { TRPCReactProvider } from "@/trpc/react";
 
@@ -43,6 +44,7 @@ export default function RootLayout({
 						</nav>
 						{children}
 					</TRPCReactProvider>
+					<Toaster />
 				</ThemeProvider>
 			</body>
 		</html>

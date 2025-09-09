@@ -4,11 +4,35 @@ model Activity {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  //
+  starts  DateTime   @default(now())
+  ends    DateTime   @default(now())
+  repeat  RepeatType @default(DAILY)
+  
+
   // Ressource Connection
-  ressources Ressource[]
+  ressources ActivityRessource[]
 
   // Booking Connection
   bookings  ActivietiesOnBookings[]
+}
+
+enum RepeatType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+model ActivityRessource {
+  id       Int @id @default(autoincrement())
+  quantity Int
+
+  activity   Activity @relation(fields: [activityId], references: [id])
+  activityId Int
+
+  ressource  Ressource @relation(fields: [ressourceId], references: [id])
+  ressourceId Int
 }
 
 model ActivietiesOnBookings {
