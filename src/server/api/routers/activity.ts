@@ -51,10 +51,9 @@ export const activityRouter = createTRPCRouter({
 								booking: true,
 							},
 						},
+						schedules: true
 					},
 				});
-
-				console.dir(activity, { depth: null });
 
 				if (!activity) {
 					throw new Error("Activity not found");
@@ -71,27 +70,30 @@ export const activityRouter = createTRPCRouter({
 			z.object({
 				name: z.string().min(1, { message: "Name is required" }),
 				ressources: z.array(z.object({ id: z.number(), quantity: z.number() })),
-				startTime: z.date(),
-				endTime: z.date(),
-				startDate: z.date().optional(),
-				repeat: z.enum(RepeatType).optional(),
-				weekdays: z.array(z.enum(Day)).optional(),
+				schedules: z.array(z.object({
+					start: z.date(),
+					end: z.date(),
+					weekday: z.enum(Day).optional(),
+					date: z.date().optional(),
+					repeat: z.enum(RepeatType).optional(),
+				})),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			const { name, ressources } = input;
 
-			console.log(input);
-
 			try {
 				const activity = await ctx.db.activity.create({
 					data: {
 						name: name,
-						starts: input.startTime,
-						ends: input.endTime,
-						date: input.startDate,
-						repeat: input.repeat,
-						days: input.weekdays,
+						schedules: {	
+							create: input.schedules.map((s) => ({
+								starts: s.start,
+								ends: s.end,
+								weekday: s.weekday,
+								date: s.date,
+							})),
+						},
 						ressources: {
 							create: ressources.map((r) => ({
 								quantity: r.quantity,

@@ -60,6 +60,25 @@ export const bookingRouter = createTRPCRouter({
 					for await (const ressource of ressources) {
 						const { quantity, ressourceId } = ressource;
 
+						// First, get ALL items to see what's actually in the database
+						// const allItems = await ctx.db.ressourceItem.findMany({
+						// 	where: { ressourceId },
+						// });
+
+						// console.log(`\n=== DEBUGGING RESOURCE ${ressourceId} ===`);
+						// console.log(
+						// 	`Booking period: ${bookingStart.toISOString()} to ${bookingEnd.toISOString()}`,
+						// );
+						// console.log(`Total items in DB:`, allItems.length);
+						// console.log(
+						// 	`All items:`,
+						// 	allItems.map((item) => ({
+						// 		id: item.id,
+						// 		bookedAt: item.bookedAt?.toISOString() || "null",
+						// 		bookedUntil: item.bookedUntil?.toISOString() || "null",
+						// 	})),
+						// );
+
 						const internalRessource = await ctx.db.ressource.findUnique({
 							where: {
 								id: ressourceId,
@@ -85,6 +104,21 @@ export const bookingRouter = createTRPCRouter({
 								},
 							},
 						});
+
+						console.log(
+							`Available items found:`,
+							internalRessource?.items.length,
+						);
+						console.log(
+							`Available items:`,
+							internalRessource?.items.map((item) => ({
+								id: item.id,
+								bookedAt: item.bookedAt?.toISOString() || "null",
+								bookedUntil: item.bookedUntil?.toISOString() || "null",
+							})),
+						);
+						console.log(`Required quantity:`, quantity);
+						console.log(`=== END DEBUG ===\n`);
 
 						if (!internalRessource) {
 							throw new Error("Ressource not found");

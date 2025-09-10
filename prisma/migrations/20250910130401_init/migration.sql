@@ -23,6 +23,18 @@ CREATE TABLE "public"."Activity" (
 );
 
 -- CreateTable
+CREATE TABLE "public"."ActivitySchedule" (
+    "id" SERIAL NOT NULL,
+    "date" TIMESTAMP(3),
+    "weekday" "public"."Day",
+    "starts" TIME(0) NOT NULL,
+    "ends" TIME(0) NOT NULL,
+    "activityId" INTEGER NOT NULL,
+
+    CONSTRAINT "ActivitySchedule_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "public"."ActivityRessource" (
     "id" SERIAL NOT NULL,
     "quantity" INTEGER NOT NULL,
@@ -47,6 +59,8 @@ CREATE TABLE "public"."Booking" (
     "name" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "starts" TIMESTAMP(3) NOT NULL,
+    "ends" TIMESTAMP(3) NOT NULL,
     "userId" INTEGER NOT NULL,
 
     CONSTRAINT "Booking_pkey" PRIMARY KEY ("id")
@@ -89,6 +103,9 @@ CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
 
 -- CreateIndex
 CREATE INDEX "User_email_idx" ON "public"."User"("email");
+
+-- AddForeignKey
+ALTER TABLE "public"."ActivitySchedule" ADD CONSTRAINT "ActivitySchedule_activityId_fkey" FOREIGN KEY ("activityId") REFERENCES "public"."Activity"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."ActivityRessource" ADD CONSTRAINT "ActivityRessource_activityId_fkey" FOREIGN KEY ("activityId") REFERENCES "public"."Activity"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

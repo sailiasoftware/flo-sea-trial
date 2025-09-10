@@ -1,18 +1,17 @@
 "use client";
 
-import type { Day, RepeatType } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { DatePicker, Select, TimePicker } from "@/components/custom";
 import { Form } from "@/components/custom/form";
 import { FormGroup } from "@/components/custom/formGroup";
 import { Input } from "@/components/custom/input";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { api } from "@/trpc/react";
 import { AddRessource } from "./_lib/addRessource/AddRessource";
+import { ScheduleList } from "./_lib/addSchedule/ScheduleList";
 import { RessourceList } from "./_lib/ressourceList";
+import type { Schedule } from "./types";
 
 export default function CreateActivity() {
 	const router = useRouter();
@@ -20,43 +19,22 @@ export default function CreateActivity() {
 		{ id: number; name: string; quantity: number }[]
 	>([]);
 	const [name, setName] = useState<string>("");
-
-	// Schedule Fields
-	const [isSingle, setIsSingle] = useState<boolean>(false);
-	const [repeat, setRepeat] = useState<RepeatType>("DAILY");
-	const [startTime, setStartTime] = useState<Date>();
-	const [endTime, setEndTime] = useState<Date>();
-	const [startDate, setStartDate] = useState<Date>();
-	const [weekdays, setWeekdays] = useState<Day[]>([]);
+	const [schedules, setSchedules] = useState<Schedule[]>();
 
 	const mutation = api.activity.create.useMutation();
 
 	const { data, isLoading, isError } = api.ressource.list.useQuery();
 
 	const handleSubmit = () => {
-		console.log(endTime);
-		console.log(!endTime);
+		if (!name || !ressources || ressources.length === 0 || !schedules) return;
 
-		if (
-			!name ||
-			!ressources ||
-			ressources.length === 0 ||
-			!startTime ||
-			!endTime
-		)
-			return;
-
-		console.log("HEE");
+		console.log("schedules", schedules);
 
 		mutation.mutate(
 			{
 				name,
 				ressources,
-				startTime: startTime,
-				endTime: endTime,
-				startDate: startDate,
-				weekdays: weekdays,
-				repeat: repeat,
+				schedules,
 			},
 			{
 				onSuccess: () => {
@@ -106,83 +84,7 @@ export default function CreateActivity() {
 				</FormGroup>
 
 				{/* Times */}
-				<FormGroup className="flex flex-row gap-8">
-					<div className="w-max">
-						<p className="text-xs">Start time</p>
-						<TimePicker date={startTime} setDate={setStartTime} />
-					</div>
-					<div className="w-max">
-						<p className="text-xs">End time</p>
-						<TimePicker date={endTime} setDate={setEndTime} />
-					</div>
-				</FormGroup>
-
-				{/* Date */}
-				<FormGroup>
-					<div className="flex gap-8">
-						<div className="flex items-center gap-2">
-							<p>Once off activity</p>
-							<Switch
-								onCheckedChange={(e) => {
-									setIsSingle(e);
-								}}
-							/>
-						</div>
-						<Select
-							name="repeat"
-							className="max-w-48"
-							placeholder="Repeat"
-							onChange={(repeat) => {
-								if (
-									repeat === "DAILY" ||
-									repeat === "WEEKLY" ||
-									repeat === "MONTHLY" ||
-									repeat === "YEARLY"
-								) {
-									setRepeat(repeat);
-								}
-							}}
-							options={[
-								{ value: "DAILY", label: "daily" },
-								{ value: "WEEKLY", label: "weekly" },
-								{ value: "MONTHLY", label: "monthly" },
-								{ value: "YEARLY", label: "yearly" },
-							]}
-						/>
-					</div>
-					{isSingle ? (
-						<DatePicker
-							label="Start date"
-							onChange={(date) => {
-								setStartDate(date);
-							}}
-						/>
-					) : (
-						<div>
-							<Select
-								name="weekday"
-								className="max-w-48"
-								placeholder="Select a weekday"
-								multiple={true}
-								value={weekdays}
-								onChange={(weekdays) => {
-									console.log("WWW", weekdays);
-									const w = Array.isArray(weekdays) ? weekdays : [weekdays];
-									setWeekdays(w as Day[]);
-								}}
-								options={[
-									{ value: "Monday", label: "Monday" },
-									{ value: "Tuesday", label: "Tuesday" },
-									{ value: "Wednesday", label: "Wednesday" },
-									{ value: "Thursday", label: "Thursday" },
-									{ value: "Friday", label: "Friday" },
-									{ value: "Saturday", label: "Saturday" },
-									{ value: "Sunday", label: "Sunday" },
-								]}
-							/>
-						</div>
-					)}
-				</FormGroup>
+				<ScheduleList schedules={schedules || []} setSchedules={setSchedules} />
 
 				{/* Add Ressource */}
 				<RessourceList ressources={ressources} />
