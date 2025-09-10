@@ -25,6 +25,7 @@ interface CalendarProps {
 	components?: React.ComponentProps<typeof DayPicker>["components"];
 	allowedDate?: Date;
 	allowedWeekdays?: Day[];
+	booked?: Date[];
 	onChange?: (date: Date | undefined) => void;
 	selected?: Date;
 	mode?: React.ComponentProps<typeof DayPicker>["mode"];
@@ -51,6 +52,7 @@ function Calendar({
 	components,
 	allowedDate,
 	allowedWeekdays,
+	booked = [],
 	onChange,
 	selected,
 	mode = "single",
@@ -60,6 +62,17 @@ function Calendar({
 	// Create disabled function based on restrictions
 	const isDateDisabled = React.useCallback(
 		(date: Date) => {
+			// Check if date is in the booked dates array
+			if (booked.length > 0) {
+				const isBooked = booked.some(
+					(bookedDate) => bookedDate.toDateString() === date.toDateString(),
+				);
+
+				if (isBooked) {
+					return true; // Disable booked dates
+				}
+			}
+
 			// If allowedDate is set, only allow that specific date
 			if (allowedDate) {
 				return date.toDateString() !== allowedDate.toDateString();
@@ -77,7 +90,7 @@ function Calendar({
 			// No restrictions, allow all dates
 			return false;
 		},
-		[allowedDate, allowedWeekdays],
+		[allowedDate, allowedWeekdays, booked],
 	);
 
 	// Handle date selection - need to handle both single and multiple modes

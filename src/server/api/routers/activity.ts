@@ -46,9 +46,15 @@ export const activityRouter = createTRPCRouter({
 						id: id,
 					},
 					include: {
-						bookings: true,
+						bookings: {
+							include: {
+								booking: true,
+							},
+						},
 					},
 				});
+
+				console.dir(activity, { depth: null });
 
 				if (!activity) {
 					throw new Error("Activity not found");

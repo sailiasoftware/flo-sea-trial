@@ -69,6 +69,7 @@ export default function CreateBooking() {
 					className="rounded-md border-1 border-accent-foreground"
 					allowedDate={data?.date || undefined}
 					allowedWeekdays={data?.days}
+					booked={data?.bookings.map((booking) => booking.booking.starts)}
 					onChange={(date) => {
 						setDate(date);
 					}}
