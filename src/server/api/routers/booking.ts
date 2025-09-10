@@ -1,5 +1,4 @@
 import { z } from "zod";
-
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { catchTrpcError } from "@/utils/server";
 
@@ -32,10 +31,12 @@ export const bookingRouter = createTRPCRouter({
 
 					const { ressources } = activity;
 
+					// 1. Fetch internal ressource, including the available items
+					// @TODO - This should be wrapped in Promises (create async wrapper func)
 					for await (const ressource of ressources) {
 						const { quantity, ressourceId } = ressource;
 
-						// 1. Fetch internal ressource, including the available items
+						// Now let's try with the filter
 						const internalRessource = await ctx.db.ressource.findUnique({
 							where: {
 								id: ressourceId,
@@ -55,6 +56,7 @@ export const bookingRouter = createTRPCRouter({
 
 						// 2. Check if the required quantity of items is availabe
 						const { items } = internalRessource;
+						console.log("ITEMS", items);
 						if (items.length < quantity) {
 							throw new Error("Not enough items available");
 						}
@@ -80,7 +82,7 @@ export const bookingRouter = createTRPCRouter({
 					}
 
 					// 4. Finally, create the booking
-					// (currently with a fake user name)
+					// @TODO - (currently with a fake user name)
 					const booking = await ctx.db.booking.create({
 						data: {
 							name: `Booking ${activity?.name}`,

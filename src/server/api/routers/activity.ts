@@ -31,6 +31,35 @@ export const activityRouter = createTRPCRouter({
 		return activities;
 	}),
 
+	get: publicProcedure
+		.input(
+			z.object({
+				id: z.number(),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
+			const { id } = input;
+
+			try {
+				const activity = await ctx.db.activity.findUnique({
+					where: {
+						id: id,
+					},
+					include: {
+						bookings: true,
+					},
+				});
+
+				if (!activity) {
+					throw new Error("Activity not found");
+				}
+
+				return activity;
+			} catch (error) {
+				catchTrpcError(error);
+			}
+		}),
+
 	create: publicProcedure
 		.input(
 			z.object({

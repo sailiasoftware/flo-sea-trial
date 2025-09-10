@@ -28,17 +28,19 @@ export const seedRessources = async (params: SeedParams) => {
 
 	const resultPromises = [];
 	for (const ressource of ressources) {
-    resultPromises.push(prisma.ressource.create({
-      data: {
-        name: ressource.name,
-        items: {
-					create: Array.from({ length: ressource.numItems }, (_, i) => ({
-						status: "AVIALABLE"
-					})),
-				}
-      },
-    }));
-  }
+		resultPromises.push(
+			prisma.ressource.create({
+				data: {
+					name: ressource.name,
+					items: {
+						create: Array.from({ length: ressource.numItems }, (_, i) => ({
+							status: "AVAILABLE",
+						})),
+					},
+				},
+			}),
+		);
+	}
 
 	const results = await Promise.all(resultPromises);
 	return results;

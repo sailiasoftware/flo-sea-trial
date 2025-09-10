@@ -9,9 +9,12 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { api } from "@/trpc/react";
+import { useRouter } from "next/navigation";
 
 export default function Book() {
+	const router = useRouter();
 	const { data, isLoading, isError } = api.activity.list.useQuery();
+
 
 	if (isLoading) {
 		return <div>Loading...</div>;
@@ -45,6 +48,9 @@ export default function Book() {
 						<Card
 							key={activity.id}
 							className="cursor-pointer bg-sidebar-accent transition-all duration-200 hover:scale-105 hover:shadow-lg"
+							onClick={() => {
+								router.push(`/book/create/${activity.id}`);
+							}}
 						>
 							<CardHeader>
 								<CardTitle className="text-accent-foreground text-xl">
