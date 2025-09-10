@@ -3,17 +3,41 @@ import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { catchTrpcError } from "@/utils/server";
 
 export const bookingRouter = createTRPCRouter({
+	list: publicProcedure.query(async ({ ctx }) => {
+		try {
+			const bookings = await ctx.db.booking.findMany({
+				include: {
+					activities: {
+						include: {
+							activity: {
+								include: {
+									ressources: true,
+								},
+							},
+						},
+					},
+					user: true,
+				},
+			});
+
+			return bookings;
+		} catch (error) {
+			catchTrpcError(error);
+		}
+	}),
+
 	create: publicProcedure
 		.input(
 			z.object({
 				activityId: z.number(),
-				bookedSlot: z.date(),
 				userEmail: z.email(),
+				bookingStart: z.date(),
+				bookingEnd: z.date(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			try {
-				const { activityId, bookedSlot, userEmail } = input;
+				const { activityId, bookingStart, bookingEnd, userEmail } = input;
 
 				const transaction = await ctx.db.$transaction(async (db) => {
 					const activity = await db.activity.findUnique({
@@ -28,17 +52,6 @@ export const bookingRouter = createTRPCRouter({
 					if (!activity) {
 						throw new Error("Activity not found");
 					}
-
-					// Set booking period
-					const bookedAt = new Date(bookedSlot);
-					bookedAt.setHours(activity.starts.getHours());
-					bookedAt.setMinutes(activity.starts.getMinutes());
-					bookedAt.setSeconds(activity.starts.getSeconds());
-
-					const bookedUntil = new Date(bookedSlot);
-					bookedUntil.setHours(activity.ends.getHours());
-					bookedUntil.setMinutes(activity.ends.getMinutes());
-					bookedUntil.setSeconds(activity.ends.getSeconds());
 
 					const { ressources } = activity;
 
@@ -61,11 +74,11 @@ export const bookingRouter = createTRPCRouter({
 											},
 											// Item's booking ends before booking starts
 											{
-												bookedUntil: { lt: bookedAt },
+												bookedUntil: { lt: bookingStart },
 											},
 											// Item's booking starts after booking ends
 											{
-												bookedAt: { gt: bookedUntil },
+												bookedAt: { gt: bookingEnd },
 											},
 										],
 									},
@@ -96,8 +109,8 @@ export const bookingRouter = createTRPCRouter({
 											id: it.id,
 										},
 										data: {
-											bookedAt: bookedAt,
-											bookedUntil: bookedUntil,
+											bookedAt: bookingStart,
+											bookedUntil: bookingEnd,
 										},
 									}),
 								);
@@ -111,7 +124,8 @@ export const bookingRouter = createTRPCRouter({
 					const booking = await ctx.db.booking.create({
 						data: {
 							name: `Booking ${activity?.name}`,
-							slot: bookedSlot,
+							starts: bookingStart,
+							ends: bookingEnd,
 							activities: {
 								create: {
 									activityId,

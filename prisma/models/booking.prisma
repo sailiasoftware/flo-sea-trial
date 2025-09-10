@@ -5,7 +5,8 @@ model Booking {
   updatedAt DateTime @updatedAt
 
   // Booking slot
-  slot DateTime 
+  starts DateTime
+  ends   DateTime 
 
   // Activity Connection
   activities ActivietiesOnBookings[]

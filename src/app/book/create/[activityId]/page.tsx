@@ -76,11 +76,22 @@ export default function CreateBooking() {
 			</div>
 			<Button
 				onClick={() => {
-					if (date && email) {
+					if (date && email && data) {
+						const sd = new Date(date);
+						sd.setHours(data.starts.getHours());
+						sd.setMinutes(data.starts.getMinutes());
+						sd.setSeconds(0);
+
+						const se = new Date(date);
+						se.setHours(data.ends.getHours());
+						se.setMinutes(data.ends.getMinutes());
+						se.setSeconds(0);
+
 						handleBooking.mutate({
 							activityId: parseInt(activityId),
-							bookedSlot: date,
 							userEmail: email,
+							bookingStart: sd,
+							bookingEnd: se,
 						});
 					}
 				}}
