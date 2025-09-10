@@ -73,6 +73,7 @@ export default function CreateActivity() {
 	return (
 		<div className="p-10">
 			<h1>Create Activity</h1>
+
 			<Form className="mt-4 max-w-2xl">
 				<FormGroup className="grid sm:grid-flow-col">
 					<Input

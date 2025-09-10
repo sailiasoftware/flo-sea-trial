@@ -1,5 +1,7 @@
 "use client";
 
+import { PlusIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
 	Table,
@@ -13,13 +15,24 @@ import { api } from "@/trpc/react";
 
 export default function Acitivies() {
 	const { data, isError, isLoading } = api.activity.list.useQuery();
+	const router = useRouter();
 
 	if (isLoading) return <div>Loading...</div>;
 	if (isError) return <div>Error</div>;
 
 	return (
 		<div className="p-10">
-			<h1 className="font-bold text-2xl">Activities</h1>
+			<div className="flex justify-between gap-2">
+				<h1 className="font-bold text-2xl">Activities</h1>
+				<Button
+					type="button"
+					onClick={() => {
+						router.push("/admin/activities/create");
+					}}
+				>
+					<PlusIcon /> New activity
+				</Button>
+			</div>
 
 			<div className="mt-6">
 				<div className="rounded-lg border">

@@ -11,6 +11,15 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
+			"correctness": {
+				"useUniqueElementIds": {
+					"level": "info",
+					"options": {
+						"excludedComponents": ["FormattedMessage"]
+					}
+				}
+			},
+
 			"a11y": {
 				"useKeyWithClickEvents": "info"
 			},
