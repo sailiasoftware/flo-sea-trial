@@ -34,7 +34,7 @@ const Dropdown: React.FC<DropdownProps> = ({
 				id={id}
 				value={selectedValue}
 				onChange={onChange}
-				className="block w-full rounded-md border-gray-300 py-2 pr-10 pl-3 text-base shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+				className="block w-full rounded-md border-2 border-gray-300 py-2 pr-10 pl-3 text-base shadow-sm focus:border-primary focus:outline-none sm:text-sm"
 			>
 				<option value="" disabled>
 					Select an option...

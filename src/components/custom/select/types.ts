@@ -6,11 +6,14 @@ type SelectOptions = {
 	label: string;
 }[];
 
-export interface SelectProps extends SelectTriggerProps {
+export interface SelectProps extends Omit<SelectTriggerProps, "onChange"> {
 	name: string;
 	placeholder?: string;
 	options: SelectOptions;
 	error?: string;
+	multiple?: boolean;
+	value?: string | string[];
+	onChange?: (value: string | string[]) => void;
 }
 
 export interface SearchableSelectProps

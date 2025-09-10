@@ -1,7 +1,0 @@
--- CreateEnum
-CREATE TYPE "public"."RepeatType" AS ENUM ('DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY');
-
--- AlterTable
-ALTER TABLE "public"."Activity" ADD COLUMN     "ends" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-ADD COLUMN     "repeat" "public"."RepeatType" NOT NULL DEFAULT 'DAILY',
-ADD COLUMN     "starts" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

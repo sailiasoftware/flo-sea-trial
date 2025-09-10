@@ -4,12 +4,17 @@ import { useId, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { type Period, TimePeriodSelect, TimePickerInput } from "./lib";
 
-interface TimePickerDemoProps {
+interface TimePickerProps {
 	date: Date | undefined;
 	setDate: (date: Date | undefined) => void;
+	onChange?: (date: Date | undefined) => void;
 }
 
-export function TimePicker12Demo({ date, setDate }: TimePickerDemoProps) {
+export function TimePicker({
+	date,
+	setDate,
+	onChange,
+}: TimePickerProps) {
 	const id = useId();
 	const [period, setPeriod] = useState<Period>("PM");
 
@@ -17,6 +22,11 @@ export function TimePicker12Demo({ date, setDate }: TimePickerDemoProps) {
 	const hourRef = useRef<HTMLInputElement>(null);
 	const secondRef = useRef<HTMLInputElement>(null);
 	const periodRef = useRef<HTMLButtonElement>(null);
+
+	const handleDateChange = (newDate: Date | undefined) => {
+		setDate(newDate);
+		onChange?.(newDate);
+	};
 
 	return (
 		<div className="flex items-end gap-2">
@@ -28,7 +38,7 @@ export function TimePicker12Demo({ date, setDate }: TimePickerDemoProps) {
 					picker="12hours"
 					period={period}
 					date={date}
-					setDate={setDate}
+					setDate={handleDateChange}
 					ref={hourRef}
 					onRightFocus={() => minuteRef.current?.focus()}
 				/>
@@ -41,7 +51,7 @@ export function TimePicker12Demo({ date, setDate }: TimePickerDemoProps) {
 					picker="minutes"
 					id="minutes12"
 					date={date}
-					setDate={setDate}
+					setDate={handleDateChange}
 					ref={minuteRef}
 					onLeftFocus={() => hourRef.current?.focus()}
 					onRightFocus={() => secondRef.current?.focus()}
@@ -55,7 +65,7 @@ export function TimePicker12Demo({ date, setDate }: TimePickerDemoProps) {
 					picker="seconds"
 					id="seconds12"
 					date={date}
-					setDate={setDate}
+					setDate={handleDateChange}
 					ref={secondRef}
 					onLeftFocus={() => minuteRef.current?.focus()}
 					onRightFocus={() => periodRef.current?.focus()}
@@ -69,7 +79,7 @@ export function TimePicker12Demo({ date, setDate }: TimePickerDemoProps) {
 					period={period}
 					setPeriod={setPeriod}
 					date={date}
-					setDate={setDate}
+					setDate={handleDateChange}
 					ref={periodRef}
 					onLeftFocus={() => secondRef.current?.focus()}
 				/>

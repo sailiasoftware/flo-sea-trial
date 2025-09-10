@@ -1,44 +1,62 @@
 "use client";
 
-import { RepeatType } from "@prisma/client";
+import type { Day, RepeatType } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { DateTimePicker } from "@/components/custom/dateTimePicker";
-import Dropdown from "@/components/custom/drompDown/DropDown";
+import { DatePicker, Select, TimePicker } from "@/components/custom";
 import { Form } from "@/components/custom/form";
 import { FormGroup } from "@/components/custom/formGroup";
 import { Input } from "@/components/custom/input";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { api } from "@/trpc/react";
+import { AddRessource } from "./_lib/addRessource/AddRessource";
+import { RessourceList } from "./_lib/ressourceList";
 
 export default function CreateActivity() {
+	const router = useRouter();
 	const [ressources, setRessources] = useState<
 		{ id: number; name: string; quantity: number }[]
 	>([]);
 	const [name, setName] = useState<string>("");
-	const [dateTime, setDateTime] = useState<{ start: string; end: string }>();
-	const [activeRes, setActiveRes] = useState<{ id: number; name: string }>();
-	const [quantity, setQuantity] = useState<number>(0);
 
-	const router = useRouter();
+	// Schedule Fields
+	const [isSingle, setIsSingle] = useState<boolean>(false);
+	const [repeat, setRepeat] = useState<RepeatType>("DAILY");
+	const [startTime, setStartTime] = useState<Date>();
+	const [endTime, setEndTime] = useState<Date>();
+	const [startDate, setStartDate] = useState<Date>();
+	const [weekdays, setWeekdays] = useState<Day[]>([]);
 
 	const mutation = api.activity.create.useMutation();
 
 	const { data, isLoading, isError } = api.ressource.list.useQuery();
 
-	if (isLoading) return <div>Loading...</div>;
-	if (isError) return <div>Error</div>;
-
 	const handleSubmit = () => {
-		if (!name || !ressources || ressources.length === 0) return;
+		console.log(endTime);
+		console.log(!endTime);
+
+		if (
+			!name ||
+			!ressources ||
+			ressources.length === 0 ||
+			!startTime ||
+			!endTime
+		)
+			return;
+
+		console.log("HEE");
 
 		mutation.mutate(
 			{
 				name,
 				ressources,
-				start: new Date(dateTime?.start || 0),
-				end: new Date(dateTime?.end || 0),
+				startTime: startTime,
+				endTime: endTime,
+				startDate: startDate,
+				weekdays: weekdays,
+				repeat: repeat,
 			},
 			{
 				onSuccess: () => {
@@ -54,21 +72,25 @@ export default function CreateActivity() {
 		);
 	};
 
-	const handleSelectChange = (id: number) => {
-		const name = data?.find((r) => r.id === id)?.name;
-		setActiveRes({ id, name: name || "" });
-	};
-
-	const addRessourceAction = () => {
+	const addRessourceAction = (
+		activeRes:
+			| {
+					id: number;
+					name: string;
+			  }
+			| undefined,
+		quantity: number,
+	) => {
 		if (!activeRes || !quantity) return;
 
 		setRessources([
 			...ressources,
 			{ id: activeRes.id, name: activeRes.name, quantity },
 		]);
-		setActiveRes(undefined);
-		setQuantity(0);
 	};
+
+	if (isLoading) return <div>Loading...</div>;
+	if (isError) return <div>Error</div>;
 
 	return (
 		<div className="p-10">
@@ -83,64 +105,88 @@ export default function CreateActivity() {
 					/>
 				</FormGroup>
 
-				<FormGroup>
-					<DateTimePicker
-						value={dateTime?.start}
-						onChange={(e) =>
-							setDateTime({ start: e.target.value, end: dateTime?.end || "" })
-						}
-						label="Start date"
-						placeholder="Select date and time"
-					/>
-					<DateTimePicker
-						value={dateTime?.end}
-						onChange={(e) =>
-							setDateTime({ start: dateTime?.start || "", end: e.target.value })
-						}
-						label="End date"
-						placeholder="Select date and time"
-					/>
-					<Dropdown
-						onChange={(e) => handleSelectChange(parseInt(e.target.value))}
-						selectedValue={activeRes?.id.toString() || ""}
-						options={Object.values(RepeatType).map((rt) => {
-							return {
-								label: rt,
-								value: rt,
-							};
-						})}
-					/>
+				{/* Times */}
+				<FormGroup className="flex flex-row gap-8">
+					<div className="w-max">
+						<p className="text-xs">Start time</p>
+						<TimePicker date={startTime} setDate={setStartTime} />
+					</div>
+					<div className="w-max">
+						<p className="text-xs">End time</p>
+						<TimePicker date={endTime} setDate={setEndTime} />
+					</div>
 				</FormGroup>
-				{ressources.length > 0 &&
-					data &&
-					ressources.map((r) => {
-						return (
-							<div key={Math.random()} className="flex gap-4">
-								<p>{r.name}</p>
-								<p>Quantity: {r.quantity}</p>
-							</div>
-						);
-					})}
-				<div className="flex gap-4">
-					{data && (
-						<Dropdown
-							onChange={(e) => handleSelectChange(parseInt(e.target.value))}
-							selectedValue={activeRes?.id.toString() || ""}
-							options={data?.map((r) => ({
-								label: r.name,
-								value: r.id.toString(),
-							}))}
+
+				{/* Date */}
+				<FormGroup>
+					<div className="flex gap-8">
+						<div className="flex items-center gap-2">
+							<p>Once off activity</p>
+							<Switch
+								onCheckedChange={(e) => {
+									setIsSingle(e);
+								}}
+							/>
+						</div>
+						<Select
+							name="repeat"
+							className="max-w-48"
+							placeholder="Select a weekday"
+							onChange={(repeat) => {
+								if (
+									repeat === "DAILY" ||
+									repeat === "WEEKLY" ||
+									repeat === "MONTHLY" ||
+									repeat === "YEARLY"
+								) {
+									setRepeat(repeat);
+								}
+							}}
+							options={[
+								{ value: "DAILY", label: "daily" },
+								{ value: "WEEKLY", label: "weekly" },
+								{ value: "MONTHLY", label: "monthly" },
+								{ value: "YEARLY", label: "yearly" },
+							]}
 						/>
+					</div>
+					{isSingle ? (
+						<DatePicker
+							label="Start date"
+							onChange={(date) => {
+								setStartDate(date);
+							}}
+						/>
+					) : (
+						<div>
+							<Select
+								name="weekday"
+								className="max-w-48"
+								placeholder="Select a weekday"
+								multiple={true}
+								onChange={(weekdays) => {
+									const w = Array.isArray(weekdays) ? weekdays : [weekdays];
+									setWeekdays(w as Day[]);
+								}}
+								options={[
+									{ value: "Monday", label: "Monday" },
+									{ value: "Tuesday", label: "Tuesday" },
+									{ value: "Wednesday", label: "Wednesday" },
+									{ value: "Thursday", label: "Thursday" },
+									{ value: "Friday", label: "Friday" },
+									{ value: "Saturday", label: "Saturday" },
+									{ value: "Sunday", label: "Sunday" },
+								]}
+							/>
+						</div>
 					)}
-					<Input
-						type="number"
-						placeholder="Quantity"
-						onChange={(e) => setQuantity(parseInt(e.target.value))}
-					/>
-					<Button type="button" onClick={addRessourceAction}>
-						Add ressource
-					</Button>
-				</div>
+				</FormGroup>
+
+				{/* Add Ressource */}
+				<RessourceList ressources={ressources} />
+				{data && (
+					<AddRessource data={data} addRessourceAction={addRessourceAction} />
+				)}
 
 				<Button
 					className="mt-4 w-full sm:max-w-max"
