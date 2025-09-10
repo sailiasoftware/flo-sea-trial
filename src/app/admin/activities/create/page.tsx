@@ -131,7 +131,7 @@ export default function CreateActivity() {
 						<Select
 							name="repeat"
 							className="max-w-48"
-							placeholder="Select a weekday"
+							placeholder="Repeat"
 							onChange={(repeat) => {
 								if (
 									repeat === "DAILY" ||
@@ -164,7 +164,9 @@ export default function CreateActivity() {
 								className="max-w-48"
 								placeholder="Select a weekday"
 								multiple={true}
+								value={weekdays}
 								onChange={(weekdays) => {
+									console.log("WWW", weekdays);
 									const w = Array.isArray(weekdays) ? weekdays : [weekdays];
 									setWeekdays(w as Day[]);
 								}}

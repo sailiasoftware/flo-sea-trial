@@ -29,6 +29,17 @@ export const bookingRouter = createTRPCRouter({
 						throw new Error("Activity not found");
 					}
 
+					// Set booking period
+					const bookedAt = new Date(bookedSlot);
+					bookedAt.setHours(activity.starts.getHours());
+					bookedAt.setMinutes(activity.starts.getMinutes());
+					bookedAt.setSeconds(activity.starts.getSeconds());
+
+					const bookedUntil = new Date(bookedSlot);
+					bookedUntil.setHours(activity.ends.getHours());
+					bookedUntil.setMinutes(activity.ends.getMinutes());
+					bookedUntil.setSeconds(activity.ends.getSeconds());
+
 					const { ressources } = activity;
 
 					// 1. Fetch internal ressource, including the available items
@@ -36,7 +47,6 @@ export const bookingRouter = createTRPCRouter({
 					for await (const ressource of ressources) {
 						const { quantity, ressourceId } = ressource;
 
-						// Now let's try with the filter
 						const internalRessource = await ctx.db.ressource.findUnique({
 							where: {
 								id: ressourceId,
@@ -44,7 +54,20 @@ export const bookingRouter = createTRPCRouter({
 							include: {
 								items: {
 									where: {
-										status: "AVAILABLE",
+										OR: [
+											// Item is not booked at all
+											{
+												AND: [{ bookedAt: null }, { bookedUntil: null }],
+											},
+											// Item's booking ends before booking starts
+											{
+												bookedUntil: { lt: bookedAt },
+											},
+											// Item's booking starts after booking ends
+											{
+												bookedAt: { gt: bookedUntil },
+											},
+										],
 									},
 								},
 							},
@@ -63,6 +86,7 @@ export const bookingRouter = createTRPCRouter({
 
 						// 3. Change the status of the available items to "BOOKED"
 						const iProms = [];
+
 						for (let i = 0; i < quantity; i++) {
 							const it = items[i];
 							if (it) {
@@ -72,7 +96,8 @@ export const bookingRouter = createTRPCRouter({
 											id: it.id,
 										},
 										data: {
-											status: "BOOKED",
+											bookedAt: bookedAt,
+											bookedUntil: bookedUntil,
 										},
 									}),
 								);
